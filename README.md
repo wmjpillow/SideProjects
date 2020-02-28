@@ -8,7 +8,7 @@ Demo: http://philome.la/wmjpillow/interactivefiction-rearwindow
 ----------------------------------------------------------------------
 - OpenCV
 
-![GitHub Logo](/SketchEffect/Trump.gif)
+![GitHub Logo](/SkecthEffect/Trump.gif)
 
 ----------------------------------------------------------------------
 - Vis_Video Interaction
