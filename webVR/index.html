@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <body>
+    <a-scene background="color: #FF4233">
+      <a-assets>
+        <a-asset-item id="tree-obj" src="lujiazui.obj"></a-asset-item>
+        <a-asset-item id="tree-mtl" src="lujiazui.mtl"></a-asset-item>
+      </a-assets>
+      
+      <a-entity obj-model="obj: #tree-obj; mtl: #tree-mtl" rotation="0 0 0" position="0 0 0"></a-entity>
+      <a-entity id="rig" position="0 160 0" rotation="0 90 0">
+        <a-entity id="camera" camera look-controls rotation-reader>
+          <!-- <a-entity geometry="primitive: plane; height: 0.2; width: 0.2" position="0 0 -1"
+          material="color: gray; opacity: 0.5"></a-entity> -->
+        </a-entity>
+      </a-entity>
+    </a-scene>
+    <script>
+    //this is for changing the position of the camera to follow the path  
+      var cx;
+      var cz;
+    d3.csv('time_stamp_csv/VID_20190603_140440_00_015_27_52.csv',function(data){
+      console.log(data);
+      // cx=data[0].x-121.5070;
+      // cz=data[0].y-31.23675;
+      data.forEach(function(d,i){
+        setTimeout(function(){
+        cz=d.x-121.5075;
+        cx=d.y-31.23415;
+        console.log(cx);
+      },i*800);
+    });
+    })
+    AFRAME.registerComponent('rotation-reader', {
+    tick: function () {
+      this.el.object3D.position.x = cx*100000;
+      this.el.object3D.position.z = cz*100000;
+      console.log(this.el.object3D.position.x);
+      console.log(this.el.object3D.position.z);
+    }
+    });
+
+// 1706_1725 // 1603_1630 // 
+// cx=d.x-121.5080;
+// cz=d.y-31.23675;
+
+// 34_50 // 106_141 // 233_311 // 
+// cx=d.x-121.5075;
+// cz=d.y-31.23415;
+
+    </script>
+  </body>
+</html>

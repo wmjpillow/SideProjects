@@ -1,0 +1,606 @@
+<DOCTYPE html>
+  <meta charset="utf-8">
+  <title>CLASS</title>
+  <head>
+      <div id="video">
+          <video id="vidtag" controls>
+            <source src="Smile.mp4" type="video/mp4" currentTime="0" />
+          </video>  
+          <div id="piechart">
+          </div> 
+          <form id="textbox">
+            <input type="text" id="advice"  placeholder="Please write down your advice here...">
+            <input type="submit" value="Submit">
+          </form>           
+  </head>
+  <style>
+  #video{position:relative; width:1500px; height:380px;}
+  #vidtag{
+    position:absolute;
+    width:600px;
+    left:70px;
+    top:30px;
+    }
+  #textbox{
+    position:absolute;
+    width:600px;
+    left:700px;
+    top:280px;
+  }
+  #piechart{
+    position:absolute;
+    width:400px;
+    height:400px;
+    left:780px;
+    top:30px;
+  }
+input[type=text], select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  position:absolute;
+    width:450px;
+    height:100px;
+    left:180px;
+    top:-45px;
+}
+input[type=submit] {
+  width: 100%;
+  background-color:gold;
+  color:black;
+  padding: 14px 20px;
+  margin: 4px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity:0.9;
+  position:absolute;
+    width:70px;
+    left:670px;
+    top:15px;
+}
+input[type=submit]:hover {
+  background-color:gold;
+  opacity:0.8;
+}
+/* 
+div {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+} */
+#fname{
+  color:white;
+  font-family: georgia, "Times New Roman", serif;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: 400;
+    stroke-width:0.2px;
+}
+  #chart1{
+    position:absolute;
+    width:1500px;
+    height:400px;
+    left:100px;
+    top:350px;
+  }
+  .SmileBox {
+    width: 100px;
+    height: 50px;
+    background:white;
+    opacity:0.8;
+    position: absolute;
+    left: var(--mouse-x);
+    top: var(--mouse-y);
+}
+  body{
+    background-color:#141415;
+  }
+  .axis{ 
+    text-align: center;
+    font-family: georgia, "Times New Roman", serif;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 400;
+    stroke-width:0.2px;
+    stroke:gold;
+    fill:gold;
+  }
+  .axis path,
+  .axis line{
+    fill:none;
+    stroke:wheat;
+    stroke-width:1px;
+    shape-rendering:optimizeSpeed;
+  }
+  .axis-title{
+    text-align: center;
+    font-family: georgia, "Times New Roman", serif;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 400;
+    stroke-width:0.5px;
+    fill:gold;
+    stroke:gold;
+    text-shadow: 0 1px 0 rgba(117, 114, 114, 0.6);
+    text-transform: capitalize;
+    shape-rendering:optimizeSpeed; 
+    opacity:0.8;
+  }
+  .axis-title1{
+    text-align: center;
+    font-family: georgia, "Times New Roman", serif;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 400;
+    stroke-width:0.5px;
+    fill:white;
+    stroke:white;
+    text-shadow: 0 1px 0 rgba(117, 114, 114, 0.6);
+    text-transform: capitalize;
+    shape-rendering:optimizeSpeed; 
+    opacity:0.8;
+  }
+  .lineT{
+    fill:none;
+    stroke:gold;
+    stroke-width:0.5px;
+  }
+  .lineS{
+    fill:none;
+    stroke:azure;
+    stroke-width:0.5px;
+  }
+  .lineP{
+    fill:none;
+    stroke:gold;
+    stroke-width:0.5px;
+  }
+  .lineN{
+    fill:none;
+    stroke:azure;
+    stroke-width:0.5px;
+  }
+  .line2{
+    fill:none;
+    stroke:aliceblue;
+    stroke-width:0.5px;
+  }
+  .overlay{
+    fill:none;
+    pointer-events:all;
+  }
+  .focus circle{
+    stroke:gold;
+    stroke-width:2px;
+    stroke-dasharray: 3,3;
+  }
+  .circle{
+    fill:gold;
+    opacity:0.4;
+  }
+  .tooltip{
+    position:absolute;
+    width:105px;
+    height:35px;
+    pointer-events:visiblePainted;
+    fill:white;
+  }
+
+  .arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+  </style>
+  <body>
+    
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+var NegativeClimateStd;
+var PositiveClimateStd;
+var fscale;
+//canvas
+var margin={top:20,right:20,bottom:30,left:70},
+    width=1500-margin.left-margin.right;
+    height=2500-margin.top-margin.bottom;
+//circle tooltip
+var tooltip=d3.select("body").append("div")
+    .attr("class","tooltip")
+    .style("opacity",0.6);
+//load data
+d3.csv('T_1_L_9_Smile_Age.csv').then(function(data) {
+  console.log(data);
+})
+d3.json('TeacherSmile.json').then(function(data) {
+  TeacherSmile = d3.keys(data)
+    .map( function(d) { 
+      return { "frame": d, "TeacherSmileValue": data[d][0], "person": "Teacher" } 
+    });
+ buildCircle(TeacherSmile);
+  buildScales(TeacherSmile);
+  console.log(TeacherSmile);
+}); // done
+d3.json('TeacherSavgol.json').then(function(data) {
+  TeacherSavgol = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "TeacherSavgolValue": data[d][0], "person": "Teacher" } 
+      });
+    buildLineT(TeacherSavgol);
+    buildScales(TeacherSavgol);
+    console.log(TeacherSavgol);
+}) // done
+d3.json('StudentSavgol.json').then(function(data) {
+  StudentSavgol = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "StudentSavgolValue": data[d][0], "person": "Teacher" } 
+      });
+    buildLine(StudentSavgol);
+    buildScales(StudentSavgol);
+    console.log(StudentSavgol);
+}) // done
+d3.json('negstdFiltered.json').then(function(data) {
+  NegativeClimateStd = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "NegativeClimateStdValue": data[d][0], "person": "NegativeClimateStd" } 
+      });
+  // buildLineN(NegativeClimateStd);
+   buildScales(NegativeClimateStd);
+   console.log(NegativeClimateStd);
+}) // done
+d3.json('posstdFiltered.json').then(function(data) {
+  PositiveClimateStd = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "PositiveClimateStdValue": data[d][0], "person": "PositiveClimateStd" } 
+      });
+  // buildLineP(PositiveClimateStd);
+   buildScales(PositiveClimateStd);
+   console.log(PositiveClimateStd);
+}) // done
+d3.json('negmeanFiltered1.json').then(function(data) {
+  NegativeClimateMean = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "NegativeClimateMeanValue": data[d][0], "person": "NegativeClimateMean" } 
+      });
+  
+   buildLineMeanN(NegativeClimateMean);
+   buildScales(NegativeClimateMean);
+  //  console.log( NegativeClimateMean);
+
+   d3.json('posmeanFiltered1.json').then(function(data) {
+  PositiveClimateMean = d3.keys(data)
+      .map( function(d) { 
+        return { "frame": d, "PositiveClimateMeanValue": data[d][0], "person": "PositiveClimateMean" } 
+      });
+   buildLineMeanP(PositiveClimateMean);
+   buildScales(PositiveClimateMean);
+  //  console.log(PositiveClimateMean);
+   ClimateMean = NegativeClimateMean.map((d, i) => ({
+     ...d,
+     ...PositiveClimateMean[i],
+   }))
+
+  //  groupData=[NegativeClimateMean,PositiveClimateMean];
+   console.log(ClimateMean);
+
+})
+
+})
+
+
+//chart size
+var width1=1400;
+var height1=300;
+//set ranges
+var x=d3.scaleLinear().range([0,width1]).domain([0,2700]);
+var y=d3.scaleLinear().range([height1,0]).domain([0,1]);
+//axis
+var xAxis=d3.axisBottom(x).ticks(10);
+var yAxis=d3.axisLeft(y).ticks(5);
+//buildScales
+function buildScales(data) { // not really used??
+  fscale = d3.scaleLinear()
+    .domain([0, 2700])
+    .range([0, 2700]);
+}
+//draw chart1 
+var chart1 = d3.select("body")
+           .append("svg")
+           .attr("width",width1+margin.left+margin.right)
+           .attr("height",height1+margin.top+margin.bottom)
+           .append("g")
+           .attr("transform","translate("+margin.left+","+margin.top+")");
+chart1.append("g")
+     .attr("class","axis axis--x")
+     .attr("transform","translate(0,"+height1+")")
+     .call(xAxis)
+     .append("text")
+      .attr("class","axis-title")
+      .attr("x",width1-10)
+      .attr("dy",".71em")
+      .style("text-anchor","end")
+      .text("Frame");
+chart1.append("g")
+     .attr("class","axis axis--y")
+     .call(yAxis)
+     .append("text")
+      .attr("class","axis-title")
+      .attr("transform","rotate(-90)")
+      .attr("y",10)
+      .attr("dy",".71em")
+      .style("text-anchor","end")
+      .text("SmileValue");
+
+
+//draw chart2 
+//chart size
+var width2=1400;
+var height2=300;
+//set ranges
+var x2=d3.scaleLinear().range([0,width2]).domain([0,2700]);
+var y2=d3.scaleLinear().range([height2,0])
+                       .domain([1.5,5.5]);
+//axis
+var xAxis=d3.axisBottom(x2)
+            .tickFormat(function(d,i){
+              return d.frame;
+            });
+var yAxis=d3.axisLeft(y2).ticks(5);
+var chart2 = d3.select("body")
+           .append("svg")
+           .attr("width",width2+margin.left+margin.right)
+           .attr("height",height2+margin.top+margin.bottom)
+           .append("g")
+           .attr("transform","translate("+margin.left+","+margin.top+")");
+// chart2.append("g")
+//      .attr("class","axis axis--x")
+//      .attr("transform","translate(0,"+height2+")")
+//      .call(xAxis)
+chart2.append("text")
+      .attr("class","axis-title")
+      .attr("x",margin.left+45)
+      .attr("y",40)
+      // .attr("dy",".171em")
+      .style("text-anchor","end")
+      .text("Positive Climate Mean");
+chart2.append("text")
+      .attr("class","axis-title1")
+      .attr("x",margin.left+45)
+      .attr("y",height2-15)
+      // .attr("dy",".171em")
+      .style("text-anchor","end")
+      .text("Negative Climate Mean");
+chart2.append("g")
+     .attr("class","axis axis--y")
+     .call(yAxis);
+
+//buildline  
+//chart1
+function buildLineT(TeacherSavgol) { 
+  var line=d3.line(TeacherSavgol)
+    .x(function(d){return x(d.frame);})
+    .y(function(d){return y(d.TeacherSavgolValue);});
+
+  chart1.append("path")
+    .datum(TeacherSavgol)
+    .attr("class","lineT")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line)
+    .on("mouseover", function() {
+              d3.select(this)
+                .style("opacity", 1)
+                .style("stroke-width", "2px")
+            chart1.append("text")
+                .attr("id", "hover-test")
+                .attr("x", width1-180)
+                .attr("y", height1/2+80)
+                .attr("fill", "gold")
+                .attr("text-anchor","end")
+                .text("TeacherSavgol");
+            })
+            // hover out effect
+            .on("mouseout", function(d, i) {
+              d3.select(this)
+                .style("opacity", 0.4)
+                .style("stroke-width", "1px");
+              d3.select("#hover-test").remove();
+            });
+}
+
+function lines(StudentSavgol) {
+  var line=d3.line(StudentSavgol)
+    .x(function(d){return x(d.frame);})
+    .y(function(d){return y(d.StudentSavgolValue);});
+  chart1.append("path")
+    .datum(StudentSavgol)
+    .attr("class","lineS")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line)
+    .on("mouseover", function() {
+              d3.select(this)
+                .style("opacity", 1)
+                .style("stroke-width", "2px")
+              chart1.append("text")
+                .attr("id", "hover-test")
+                .attr("x", width1-180)
+                .attr("y", height1/2+80)
+                .attr("fill", "white")
+                .attr("text-anchor","end")
+                .text("StudentSavgol");
+            })
+            // hover out effect
+            .on("mouseout", function(d, i) {
+              d3.select(this)
+                .style("opacity", 0.4)
+                .style("stroke-width", "1px");
+              d3.select("#hover-test").remove();
+            });
+}
+//chart2
+function buildLineN(NegativeClimateStd) { 
+  var line=d3.line(NegativeClimateStd)
+    .x(function(d){return x(d.frame);})
+    .y(function(d){return y(d.NegativeClimateStdValue);});
+chart1.append("path")
+    .datum(NegativeClimateStd)
+    .attr("class","lineN")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line);
+}
+function buildLineP(PositiveClimateStd) { // can extract to a single function buildline
+  var line2=d3.line(PositiveClimateStd)
+    .x(function(d){return x(d.frame);})
+    .y(function(d){return y(d.PositiveClimateStdValue);});
+chart1.append("path")
+    .datum(PositiveClimateStd)
+    .attr("class","lineP")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line2);
+}
+//chart3
+function buildLineMeanN(NegativeClimateMean) { 
+  var line=d3.line(NegativeClimateMean)
+    .x(function(d){return x2(d.frame);})
+    .y(function(d){return y2(d.NegativeClimateMeanValue);});
+chart2.append("path")
+    .datum(NegativeClimateMean)
+    .attr("class","lineN")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line)
+    .on("mouseover", function() {
+              d3.select(this)
+                .style("opacity", 1)
+                .style("stroke-width", "2px")
+              svg.append("text")
+                .attr("id", "hover-test")
+                .attr("x", width)
+                .attr("y", 80)
+                .attr("fill","white")
+                .attr("text-anchor","end")
+                .text("NegativeClimateMean");
+            })
+            // hover out effect
+            .on("mouseout", function(d, i) {
+              d3.select(this)
+                .style("opacity", 0.4)
+                .style("stroke-width", "1px");
+              d3.select("#hover-test").remove();
+            });
+}
+function buildLineMeanP(PositiveClimateMean) { 
+  var line2=d3.line(PositiveClimateMean)
+    .x(function(d){return x2(d.frame);})
+    .y(function(d){return y2(d.PositiveClimateMeanValue);});
+chart2.append("path")
+    .datum(PositiveClimateMean)
+    .attr("class","lineP")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("d", line2)
+    .on("mouseover", function() {
+              d3.select(this)
+                .style("opacity", 1)
+                .style("stroke-width", "2px")
+              svg.append("text")
+                .attr("id", "hover-test")
+                .attr("x", width)
+                .attr("y", 80)
+                .attr("fill","gold")
+                .attr("text-anchor","end")
+                .text("PositiveClimateMean");
+            })
+            // hover out effect
+            .on("mouseout", function(d, i) {
+              d3.select(this)
+                .style("opacity", 0.4)
+                .style("stroke-width", "1px");
+              d3.select("#hover-test").remove();
+            });
+}
+
+
+
+
+//buildcircle
+function buildCircle(TeacherSmile) {
+chart1.selectAll('circle')
+    .data(TeacherSmile)
+    .join('circle')
+    .attr('r', 3)
+    .attr('cx', d => x(d.frame))
+    .attr('cy', d => y(d.TeacherSmileValue))
+    .attr("class","circle")
+    .on("mouseover",function(d){
+       d3.select(this).attr("r",8);
+       d3.select(this).attr("opacity",1);
+       
+       tooltip.transition()
+              .duration(200)
+              .style("opacity",0.8);
+       tooltip.html("<div>"+d.person+"</div>"
+                    +"<div>"+"Frame:"+d.frame+"</div>"
+                    +"<div>"+"SmileValue:"+d.TeacherSmileValue+"</div>")
+                    .style("left",(d3.event.pageX+10)+"px")
+                    .style("top",(d3.event.pageY+10)+"px")
+                    .style("cursor","default")
+                    .style("padding","2px")
+                    .style("border-radius","2px")
+                    .style("font-size","10px")
+                    .style("box-shadow","0 0 1px rgba(0,0,0,0.3")
+                    .style("background","rgba(255,255,255,0.8");
+       })
+    .on("mouseout",function(d){
+       d3.select(this).attr("r",3);
+       d3.select(this).attr("opacity",0.8);
+        tooltip.transition()
+               .duration(500)
+               .style("opacity",0);
+       })
+      .on('click', d => {
+      setFrame(d.frame);
+      console.log(d);
+      console.log(ClimateMean);
+      let val = ClimateMean.filter(m => m.frame === d.frame)[0];
+      piedata = [{"value":val.NegativeClimateMeanValue},{"value":val.PositiveClimateMeanValue}];
+      console.log(piedata);
+    });     
+}
+
+
+//video Control 
+var video = document.getElementById("vidtag");
+
+function setFrame(f) {
+  video.pause();
+  video.currentTime = (f*900/2700);
+
+  video.pause();
+}
+function settime(time) {
+  video.pause();
+  video.currentTime = time;
+  video.pause();
+}
+
+    </script>
+   
+  </body>
+</DOCTYPE>

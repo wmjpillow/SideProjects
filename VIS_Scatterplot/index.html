@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+body{
+  font:11px sans-serif;
+}
+.axis path,
+.axis line{
+  fill: none;
+  stroke:lightsteelblue;
+  shape-rendering:crispEdges;
+  stroke-width:1.8px;
+}
+.axisGrid line{
+  fill: none;
+  stroke:lightsteelblue;
+  shape-rendering:crispEdges;
+  stroke-width:1px;
+  opacity:0.6;
+}
+.dot{
+  stroke:#FFF;
+  opacity:0.6;
+}
+.tooltip{
+  position: absolute;
+  width:200px;
+  height:28px;
+  pointer-events:visiblePainted;
+}
+.grid .tick{
+  stroke:lightgray;
+  opacity:0.7;
+}
+.grid line{
+  stroke: lightgrey;
+  stroke-opacity:0.7;
+  shape-rendering:crispEdges;
+}
+.grid path{
+  stroke-width:0;
+}
+.label{
+  font-family:"Times New Roman", Times, serif;
+  font-size:15px;
+  stroke:steelblue;
+}
+.graph-svg-component{
+  background-color:floralwhite;
+}
+.annotation{
+  stroke:white;
+}
+.legend1{
+  font-family:"Times New Roman", Times, serif;
+  font-size:12px;
+  stroke:rgb(73, 79, 85);
+  opacity:0.8;
+}
+.legend2{
+  fill:lightslategrey;
+  font-family:"Times New Roman", Times, serif;
+  font-size:12px;
+  stroke:rgb(73, 79, 85);
+  opacity:0.8;
+}
+</style>
+<body>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+
+  <script>
+  var margin={top:20,right:20,bottom:40,left:40},
+      width=800-margin.left-margin.right,
+      height=500-margin.top-margin.bottom;
+
+  //set up x
+  var xValue=function(d){return d.Weight;},   //data-->value
+      xScale=d3.scale.linear().range([0,width]),  //value-->display
+      xMap=function(d){return xScale(xValue(d));},  //data-->display
+      xAxis= d3.svg.axis().scale(xScale).orient("bottom").ticks(5);
+  
+
+  //set up y
+  var yValue=function(d){if (d["MPG"]>0)
+                          {return d["MPG"]};},
+      yScale=d3.scale.linear().range([height,0]),
+      yMap=function(d){if(yValue!="NaN"){
+                  return yScale(yValue(d))};},
+      yAxis=d3.svg.axis().scale(yScale).orient("left").ticks(5);
+  
+  //set up yGrid
+  var yAxisGrid= d3.svg.axis().scale(yScale)
+      .ticks(5)
+      .tickSize(width,0)
+      .tickFormat("")
+      .orient("right");
+
+  //set up xGrid
+  var xAxisGrid= d3.svg.axis().scale(xScale)
+      .ticks(5)
+      .tickSize(-height,0)
+      .tickFormat("")
+      .orient("top");
+
+
+  //set up fill color
+  var cValue= function(d){return d.Manufacturer;},   
+      color = d3.scale.category10();
+ 
+  //add the graph canvas to the body of the webpage
+  var svg=d3.select("body").append("svg")
+      .attr("width",width+margin.left+margin.right)
+      .attr("height",height+margin.top+margin.bottom)
+      .attr("class","graph-svg-component")
+      .append("g")
+      .attr("transform","translate("+margin.left+","+margin.top+")");
+
+  //add the tooltip area to the webpage
+  var tooltip=d3.select("body").append("div")
+      .attr("class","tooltip")
+      .style("opacity",0.6);
+
+  //load data
+  d3.csv("cars-sample.csv",function(error,data){
+    //change string(from CSV) into number format
+    data.forEach(function(d){
+      d.Weight=+d.Weight;
+      d["MPG"]=+d["MPG"];    
+    //  console.log(d);
+    });
+
+  //don't want dots overlapping axis, so add in buffer to data domain
+  xScale.domain([d3.min(data,xValue)-1,d3.max(data,xValue)+1]);
+  yScale.domain([d3.min(data,yValue)-1,d3.max(data,yValue)+1]);
+
+  //r-circle
+
+  
+
+  //x-axis
+  svg.append("g")
+     .attr("class","axis")
+     .attr("transform","translate(0,"+height+")")
+     .style("fill","lightsteelblue")
+     .call(xAxis)
+     .append("text")
+       .attr("class","label")
+       .attr("x",width/2)
+       .attr("y", 35)
+       .style("text-anchor","middle")
+  //     .style("text-decoration","underline")
+       .text("Weight");
+  
+  //y-axis
+  svg.append("g")
+     .attr("class","axis")
+     .style("fill","lightsteelblue")
+     .call(yAxis)
+     .append("text")
+        .attr("class","label")
+        .attr("transform","rotate(-90)")
+        .attr("x",-height/2)
+        .attr("y",-25)
+        .style("text-anchor","middle")
+  //      .style("text-decoration","underline")
+        .text("MPG");
+  
+  //y-grid
+  svg.append("g")
+     .attr("class","axisGrid")
+     .style("stroke-dasharray",("3,3"))
+  //   .style("fill","lightsteelblue")
+     .call(yAxisGrid);
+
+  //x-grid
+  svg.append("g")
+     .attr("class","axisGrid")
+     .style("stroke-dasharray",("3,3"))
+     .call(xAxisGrid);
+  
+  //draw dots
+  svg.selectAll(".dot")
+       .data(data)
+    .enter().append("circle")
+       .attr("class","dot")
+       .attr("r",function(d){if(d["MPG"]>0){
+              return d.Weight/500};})
+       .attr("cx",xMap)
+       .attr("cy",yMap)
+       .style("fill",function(d){return color(cValue(d));})
+       .on("mouseover",function(d){
+         d3.select(this).attr("r",12);
+         d3.select(this).attr("opacity",1);
+
+        
+           tooltip.transition()
+                  .duration(200)
+                  .style("opacity",0.8);
+           tooltip.html("<div>"+d["Car"]+"</div>"
+                       +"<div>"+"("+xValue(d)+","+yValue(d)+")"+"</div>")
+                  
+                  .style("left",(d3.event.pageX+15)+"px")
+                  .style("top",(d3.event.pageY+12)+"px")
+                  .style("cursor","default")
+                  .style("padding","2px")
+                  .style("border-radius","2px")
+                  .style("box-shadow","0 0 1px rgba(0,0,0,0.3)")
+                  .style("background","rgba(255,255,255,0.6)");
+       })
+       .on("mouseout",function(d){
+         d3.select(this).attr("r",function(d){return d.Weight/500;});
+         d3.select(this).attr("opacity",0.8);
+           tooltip.transition()
+                  .duration(500)
+                  .style("opacity",0);
+       });
+
+   //draw legend
+   var legend1=svg.selectAll(".legend1")
+       .data(color.domain())
+       .enter().append("g")
+       .attr("class","legend1")
+       .attr("transform",function(d,i){return "translate(0,"+i*20+")";});
+
+   //draw legend colored rectangles
+   legend1.append("rect")
+         .attr("x", width-18)
+         .attr("y",86)
+         .attr("width",18)
+         .attr("height",18)
+         .style("fill",color)
+         .style("opacity",0.6)
+         
+   //draw legend text
+   legend1.append("text")
+         .attr("class","legend1")
+         .attr("x",width-23)
+         .attr("y",100)
+     //    .attr("dy",".35em")
+         .style("text-anchor","end")
+         .text(function(d){return d;})
+
+   //draw Weight Legend
+   var legend2=svg.selectAll(".legend2")
+        .data([2000,3000,4000])
+        .enter().append("g")
+        .attr("class","legend2")
+        .attr("transform",function(d,i){return "translate(730,"+i*20+")";});
+
+    legend2.append("circle")
+           .attr("class","legend2")
+           .attr("r",function(d){return d/500;})
+           .attr("x",8)
+           .attr("y",38)
+           .style("fill","lightslategrey")
+
+    legend2.append("text")
+           .attr("class","legend2")
+           .attr("x",-13)
+           .attr("y",5)
+           .style("text-anchor","end")
+           .text(function(d){return d;})
+  });
+
+  </script>
+</body>
+
+</html>
+
+</DOCTYPE>
