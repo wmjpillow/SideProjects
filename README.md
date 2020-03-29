@@ -5,6 +5,8 @@ This repo is a folder to contain my past small side projects.
 
 Demo: http://philome.la/wmjpillow/interactivefiction-rearwindow
 
+![GitHub Logo](/InteractiveFiction/fiction.gif)
+
 ----------------------------------------------------------------------
 - OpenCV
 
