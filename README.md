@@ -16,6 +16,11 @@ Demo: http://philome.la/wmjpillow/interactivefiction-rearwindow
 ![GitHub Logo](/Video-VIS/demo.gif)
 
 ----------------------------------------------------------------------
+- OpenCV
+
+![GitHub Logo](/FireDetection/FireDetection.gif)
+
+----------------------------------------------------------------------
 - VIS_ScatterPlot
 
 ![ggplot2](/VIS_Scatterplot/Scatterplot_3.gif)
