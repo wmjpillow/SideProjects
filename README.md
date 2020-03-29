@@ -21,6 +21,11 @@ Demo: http://philome.la/wmjpillow/interactivefiction-rearwindow
 ![GitHub Logo](/FireDetection/FireDetection.gif)
 
 ----------------------------------------------------------------------
+- OpenCV
+
+![GitHub Logo](/FlameSegmentation/segmentation.gif)
+
+----------------------------------------------------------------------
 - VIS_ScatterPlot
 
 ![ggplot2](/VIS_Scatterplot/Scatterplot_3.gif)
